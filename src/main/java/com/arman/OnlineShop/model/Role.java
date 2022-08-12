@@ -1,18 +1,13 @@
 package com.arman.OnlineShop.model;
 
-import lombok.Data;
+import org.springframework.security.core.GrantedAuthority;
 
-import javax.persistence.*;
 
-@Data
-@Entity
-@Table(name = "roles")
-public class Role {
-    @Id
-    @Column(name = "role_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public enum Role implements GrantedAuthority {
+    ROLE_USER, ROLE_ADMIN;
 
-    private String name;
-
+    @Override
+    public String getAuthority() {
+        return name();
+    }
 }

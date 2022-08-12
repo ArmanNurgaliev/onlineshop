@@ -1,0 +1,51 @@
+<div th:fragment="navigation" xmlns="http://www.w3.org/1999/xhtml"
+     xmlns:th="http://www.thymeleaf.org"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container px-4 px-lg-5">
+        <a class="navbar-brand" th:href="@{/}">Start Bootstrap</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                <li class="nav-item"><a class="nav-link active" aria-current="page" th:href="@{/}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#!">About</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Shop</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" th:href="@{/products/all}">All Products</a></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><a class="dropdown-item" th:href="@{/products/new}">New Arrivals</a></li>
+                        <li><a class="dropdown-item" sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/products/add/new}">Add product</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item"><a class="nav-link" sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/users}">Users</a></li>
+            </ul>
+            <form class="d-flex" th:if="${user != null}" th:action="@{'/cart/' + ${user.getId()}}">
+                <button class="btn btn-outline-dark" type="submit">
+                    <i class="bi-cart-fill me-1"></i>
+                    Cart
+                    <span class="badge bg-dark text-white ms-1 rounded-pill" id="numOfProducts" th:text="${numProductsInCart}">0</span>
+                </button>
+            </form>
+            <div class="d-flex dropdown" sec:authorize="isAuthenticated()">
+                <button th:text="${#authentication.getName()}" class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Dropdown button
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" th:href="@{'/order/' + ${user.getId()}}">Orders</a>
+                    <a class="dropdown-item" href="/logout">Logout</a>
+                </div>
+            </div>
+            <div class="d-flex" sec:authorize="isAnonymous()">
+                <a style="margin-right: 2px" th:href="@{'/login'}"  class="btn btn-secondary" type="button">
+                    Login
+                </a>
+                <a th:href="@{'/registration'}" class="btn btn-secondary" type="button">
+                    Sign up
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+</div>

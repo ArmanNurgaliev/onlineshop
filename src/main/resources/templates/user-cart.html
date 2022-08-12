@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns="http://www.w3.org/1999/html"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Shop Homepage - Start Bootstrap Template</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <!--Link for dropdown-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link th:href="@{/css/styles.css}"  rel="stylesheet" />
+    <link th:href="@{/css/cart.css}"  rel="stylesheet" />
+    <!--<link th:href="@{/css/footer.css}"  rel="stylesheet" />-->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</head>
+<body>
+<!-- Navigation-->
+<div th:insert="fragments/navigation::navigation"></div>
+<!-- Header-->
+<div th:insert="fragments/header::header"></div>
+<!-- Section-->
+<section id="section" class="py-5">
+    <div class="container mt-5 p-3 rounded cart-table">
+            <div class="col-md-8">
+                <div class="product-details mr-2">
+                    <h6 class="mb-0">Shopping cart</h6>
+                    <hr>
+                    <table id="cart_table" style="border-collapse: separate; border-spacing: 20px; margin: 0 auto;">
+                        <thead>
+                        <tr>
+                            <th style="font-size: 0">Checkbox</th>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Available</th>
+                            <th>Amount</th>
+                            <th>Sum</th>
+                            <th>Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                </div>
+
+            <div class="col-md-4">
+                <a class="payment-info" type="button" th:href="@{/order}">
+                    Buy: $<span id="totalPrice" />
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Footer-->
+<div th:insert="fragments/footer::footer"></div>
+<!-- Bootstrap core JS-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Core theme JS-->
+<script src="js/scripts.js"></script>
+
+<script type="text/javascript">
+
+    $("#cart_table > tbody").on("click", ".delete", function () {
+      let currow = $(this).closest('tr');
+      let order_details_id = currow.find('td:eq(0)').text();
+      console.log(order_details_id);
+      $.ajax({
+          url: '/cart/delete',
+          type: 'GET',
+          dataType: 'json',
+          data: {"order_details_id": order_details_id},
+          contentType: 'application/json; charset=utf-8',
+          success: function (data) {
+              $("#numOfProducts").html(data);
+              loadData();
+          }
+      })
+  });
+
+    function numberOfProducts() {
+        $.ajax({
+            type: "GET",
+            url: "/cart/num-of-products",
+            success: function (data) {
+                console.log(data);
+                $("#numOfProducts").html(data);
+            }
+        })
+    };
+
+      function loadData() {
+          let tableData = "";
+          $.ajax({
+              type: "GET",
+              url: "/cart",
+              success: function (response) {
+                  console.log(response);
+                  numberOfProducts();
+                  response.forEach(function (item) {
+                      tableData += '<tr>' +
+                          '<td><span style="font-size: 0;">' + item.order_details_id + '</span>' +
+                          '</td>' +
+                          '<td>' +
+                          '<img style="width: 50px; height: 50px;" src="' + item.productImage + '" />' +
+                          '</td>' +
+                          '<td><a href="/product/' + item.productId + '">' + item.productName + '</td>' +
+                          '<td>' + item.productPrice + '</td>' +
+                          '<td>' + item.productAmount + '</td>' +
+                          '<td>' +
+                          '<div class="inline">' +
+                          '<button type="button" class="minus"><span class="action">-</span></button>' +
+                          '<span class="quantity">' + item.orderQuantity + '</span>' +
+                          '<button type="button" class="plus"><span class="action">+</span></button>' +
+                          '</div>' +
+                          '</td>' +
+                          '<td class="itemPrice">' + (item.orderPrice * item.orderQuantity) + '</td>' +
+                          '<td>' +
+                          '<button type="button" class="btn btn-danger btn-md delete">' +
+                          'Delete' + '</button>' +
+                          '</td>' +
+                          '</tr>';
+                  });
+                  $("#cart_table>tbody").html(tableData);
+
+                  let totalPrice = 0;
+                  response.forEach(function (item) {
+                      totalPrice += (item.orderPrice * item.orderQuantity);
+                  });
+                  $("#totalPrice").html(totalPrice);
+              }
+          });
+      }
+
+    $("#cart_table > tbody").on("click", ".plus", function (){
+        let currow = $(this).closest('tr');
+        let order_details_id = currow.find('td:eq(0)').text();
+        console.log(order_details_id);
+        $.ajax({
+            url: '/cart/plusAmount',
+            type: 'GET',
+            dataType: 'json',
+            data: {'order_details_id': + order_details_id},
+            contentType: 'application/json; charset=utf-8',
+            success: function () {
+                loadData();
+            }
+        });
+    });
+
+    $("#cart_table > tbody").on("click", ".minus", function (){
+        let currow = $(this).closest('tr');
+        let order_details_id = currow.find('td:eq(0)').text();
+        console.log(order_details_id);
+        $.ajax({
+            url: '/cart/minusAmount',
+            type: 'GET',
+            dataType: 'json',
+            data: {'order_details_id': + order_details_id},
+            contentType: 'application/json; charset=utf-8',
+            success: function () {
+                loadData();
+            }
+        });
+    });
+
+      $(document).ready(function() {
+          loadData();
+      });
+</script>
+
+</body>
+</html>

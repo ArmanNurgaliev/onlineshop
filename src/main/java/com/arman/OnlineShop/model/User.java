@@ -1,50 +1,67 @@
 package com.arman.OnlineShop.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.util.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    /*@SequenceGenerator(name="pk_sequence",sequenceName="entity_id_seq", allocationSize=1)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE,generator="pk_sequence")*/
     @Column(name = "user_id")
     private Long id;
+
+    @NotBlank(message = "Username can not be empty")
+    @Size(min=2, max=50)
     private String username;
-    private String password;
+
+    @NotBlank(message = "Email can not be empty")
+    @Email(message = "Please provide a valid email")
     private String email;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "users_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> role = new HashSet<>();
+    @NotBlank(message = "Password can not be empty")
+    private String password;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "users_products",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(
-                    name = "product_id",
-                    referencedColumnName = "id"
-            )
-    )
-    private List<Product> products;
+    @Transient
+    private String confirmPassword;
+
+    private Boolean enabled = false;
+
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    private Set<Role> roles;
+
+
+    @Enumerated(EnumType.STRING)
+    private AuthenticationProvider authProvider;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
-        for (Role r : role) {
-            authorities.add(new SimpleGrantedAuthority(r.getName()));
+        for (Role r : roles) {
+            authorities.add(new SimpleGrantedAuthority(r.name()));
         }
 
         return authorities;
@@ -77,6 +94,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }

@@ -8,14 +8,17 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/registration")
 public class RegistrationController {
-    private UserService userService;
-
+    private final UserService userService;
     @Autowired
     public RegistrationController(UserService userService) {
         this.userService = userService;
@@ -29,12 +32,25 @@ public class RegistrationController {
     }
 
     @PostMapping
-    public String registerUser(@RequestBody User user, BindingResult bindingResult, Model model) {
+    public String registerUser(@Valid User user,
+                               BindingResult bindingResult,
+                               @RequestParam String confirmPassword, Model model) {
+        Map<String, String> exist = new HashMap<>();
         if(bindingResult.hasErrors()){
-            model.addAttribute("user", user);
             return "registration";
         }
-        userService.save(user);
+        if (!user.getPassword().equals(confirmPassword)) {
+            model.addAttribute("confirmation", "Passwords are not equals");
+            return "registration";
+        }
+        if (!userService.register(user, exist)) {
+            if (exist.containsKey("usernameExist"))
+                model.addAttribute("usernameExist", "An account already exists for this username");
+            if (exist.containsKey("emailExist"))
+                model.addAttribute("emailExist", "An account already exists for this email");
+            return "registration";
+        }
+
         return "redirect:/login";
     }
 }
