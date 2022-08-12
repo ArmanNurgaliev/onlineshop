@@ -1,24 +1,5 @@
-# Simple Online Shop
+# Pet project: Online Shop
 
-##Todo
-
-##In process
-
-##Done
-- Products pages
-- Product entity
-- Picture saving
-- Spring security
-  - Create user entity
-  - Create Roles
-- Registration form (saving to DB, check if exists, validation)
-- Spring security
-  - oauth2 authentication
-- Admin pages
-  - User list
-  - User list pagination
-  - Delete user
-- Login button in header
-- Add product to cart
-
-## Problems
+To create the site, I used Spring Framework(
+Spring boot, Security, JPA). For DB i used Postgresql.
+For backend - thymeleaf and a little JS (ajax).
